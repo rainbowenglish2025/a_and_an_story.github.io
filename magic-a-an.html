@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Сыщики A и AN — интерактивные задания (озвучка)</title>
+  <style>
+    :root{--bg:#fff9ec;--card:#ffffff;--accent:#6aa84f;--accent2:#f08a5d;--text:#333}
+    *{box-sizing:border-box}
+    body{font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; margin:0; background:linear-gradient(180deg,#fff 0%,var(--bg) 100%); color:var(--text);}
+    header{display:flex;gap:16px;align-items:center;padding:20px;border-bottom:4px solid #ffd6a5}
+    .logo{width:76px;height:76px;background:linear-gradient(135deg,var(--accent),#4a7c59);border-radius:14px;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:28px;box-shadow:0 6px 18px rgba(0,0,0,.08)}
+    h1{font-size:20px;margin:0}
+    p.lead{margin:4px 0 0;color:#555}
+    main{padding:18px;max-width:980px;margin:18px auto;}
+    .grid{display:grid;grid-template-columns:1fr;gap:14px}
+    @media(min-width:860px){.grid{grid-template-columns:1fr 380px}}
+
+    .card{background:var(--card);border-radius:12px;padding:14px;box-shadow:0 6px 18px rgba(0,0,0,.06)}
+    .task-title{display:flex;align-items:center;gap:10px;font-weight:700}
+    .hint{font-size:13px;color:#666;margin-top:6px}
+
+    /* Fill-in */
+    .fill-list{list-style:none;padding:0;margin:8px 0}
+    .fill-list li{display:flex;align-items:center;gap:10px;padding:8px 6px;border-radius:8px}
+    .word-box{font-size:18px;padding:6px 10px;border-radius:8px;background:#f7f7f7;border:1px dashed #e6e6e6;min-width:120px}
+    input.short{width:72px;padding:6px;border-radius:8px;border:1px solid #ddd;text-align:center}
+
+    /* Drag & Drop */
+    .dnd-area{display:flex;gap:8px;flex-wrap:wrap}
+    .card-draggable{background:#fff;padding:10px;border-radius:10px;border:2px solid #f0f0f0;cursor:grab;user-select:none}
+    .bins{display:flex;gap:8px}
+    .bin{flex:1;padding:12px;border-radius:10px;min-height:84px;border:2px dashed #e0e0e0;display:flex;flex-direction:column;gap:6px;align-items:center;justify-content:flex-start}
+
+    /* Quiz */
+    .choices{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+    .choice{padding:10px;border-radius:10px;border:1px solid #eee;background:#fafafa;cursor:pointer}
+    .choice.correct{border-color:var(--accent);background:#e9f7e9}
+    .choice.wrong{border-color:#f08a5d;background:#fff2ee}
+
+    .btn{display:inline-block;padding:10px 14px;border-radius:10px;background:linear-gradient(90deg,var(--accent),#4a7c59);color:white;font-weight:700;border:none;cursor:pointer}
+    .small{padding:6px 8px;font-size:14px}
+
+    footer{padding:12px;text-align:center;color:#666;font-size:14px}
+
+    .result{padding:10px;margin-top:8px;border-radius:8px;background:#fffef6;border:1px solid #ffe5b4}
+
+    .badge{display:flex;gap:8px;align-items:center;padding:8px;border-radius:10px;background:linear-gradient(135deg,#fff9e6,#fff);}
+    .badge .medal{width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:gold;font-weight:800}
+
+    /* Confetti/Stars */
+    .star{position:fixed;font-size:22px;pointer-events:none;transform:translateY(0);opacity:0;transition:transform 900ms cubic-bezier(.2,.9,.2,1),opacity 900ms}
+
+    .emoji{font-size:22px;margin-right:6px}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">A&AN</div>
+    <div>
+      <h1>Сыщики A и AN — интерактивные задания</h1>
+      <p class="lead">Играй, слушай и становись почётным детективом английского языка! (озвучка мальчиком)</p>
+    </div>
+  </header>
+
+  <main>
+    <div class="grid">
+      <section class="card">
+        <div class="task-title">📝 Задание 1 — Впиши A или AN (клик — слушай)</div>
+        <p class="hint">Нажми на слово, чтобы услышать фразу с артиклем (например, "a cat"). Затем впиши A или AN и нажми «Проверить».</p>
+        <ul class="fill-list" id="fillList"></ul>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button class="btn" id="checkFill">Проверить</button>
+          <button class="btn small" id="resetFill" style="background:linear-gradient(90deg,#ccc,#bbb)">Сбросить</button>
+        </div>
+        <div id="fillResult" class="result" style="display:none"></div>
+      </section>
+
+      <aside class="card">
+        <div class="task-title">🕵️ Мини-инструкции</div>
+        <p class="hint">Если слово начинается с гласного звука — "AN", если с согласного — "A". Кликайте на слова, чтобы услышать их в детском английском.</p>
+        <div style="margin-top:12px" class="badge">
+          <div class="medal">🏅</div>
+          <div>
+            <div style="font-weight:700">Получи медаль!</div>
+            <div style="font-size:13px;color:#666">Набери 3/3 в мини-игре и получи медаль детектива.</div>
+          </div>
+        </div>
+      </aside>
+
+      <section class="card">
+        <div class="task-title">🎯 Задание 2 — Перетащи карточки и кликай, чтобы слушать</div>
+        <p class="hint">Перетащи слова в правильный стол (A или AN). Кликни на карточку — услышишь фразу с артиклем. Затем нажми «Проверить».</p>
+        <div style="margin:10px 0" class="dnd-area" id="dndArea"></div>
+        <div style="display:flex;gap:8px;margin-top:10px;align-items:center">
+          <div class="bins" style="flex:1">
+            <div class="bin" id="binA"><strong>A</strong><div class="binList" data-bin="A"></div></div>
+          </div>
+          <div class="bins" style="flex:1">
+            <div class="bin" id="binAN"><strong>AN</strong><div class="binList" data-bin="AN"></div></div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:10px">
+          <button class="btn" id="checkDnd">Проверить</button>
+          <button class="btn small" id="resetDnd" style="background:linear-gradient(90deg,#ccc,#bbb)">Сбросить</button>
+        </div>
+        <div id="dndResult" class="result" style="display:none"></div>
+      </section>
+
+      <section class="card">
+        <div class="task-title">❓ Мини-викторина — выбери правильный ответ (клик — слушай)</div>
+        <p class="hint">Кликни по варианту. Слушай слово и получай голосовую похвалу!</p>
+        <div id="quizBlock">
+          <div style="font-weight:700">1) ___ orange</div>
+          <div class="choices" data-answer="AN" data-word="orange"></div>
+
+          <div style="font-weight:700;margin-top:12px">2) ___ cat</div>
+          <div class="choices" data-answer="A" data-word="cat"></div>
+
+          <div style="font-weight:700;margin-top:12px">3) ___ hour</div>
+          <div class="choices" data-answer="AN" data-word="hour"></div>
+
+          <div id="quizResult" class="result" style="display:none;margin-top:10px"></div>
+        </div>
+      </section>
+
+    </div>
+
+    <section style="margin-top:16px" class="card">
+      <div class="task-title">🎉 Диплом — распечатай или сохрани</div>
+      <p class="hint">Нажми кнопку, чтобы получить простой диплом в новом окне (печать/сохранение PDF).</p>
+      <button class="btn" id="getBadge">Получить диплом</button>
+    </section>
+
+  </main>
+
+  <footer>Создано для урока «Неопределённый артикль A и AN» — весело и понятно!</footer>
+
+  <script>
+    // Data
+    const fillItems = [
+      {word:'cat',answer:'A',emoji:'🐱'},
+      {word:'apple',answer:'AN',emoji:'🍎'},
+      {word:'dog',answer:'A',emoji:'🐶'},
+      {word:'elephant',answer:'AN',emoji:'🐘'},
+      {word:'orange',answer:'AN',emoji:'🍊'},
+      {word:'banana',answer:'A',emoji:'🍌'},
+      {word:'igloo',answer:'AN',emoji:'🧊'},
+      {word:'unicorn',answer:'A',emoji:'🦄'},
+      {word:'hour',answer:'AN',emoji:'⏰'},
+      {word:'car',answer:'A',emoji:'🚗'}
+    ];
+
+    const wordsForDnd = ['apple','cat','hour','unicorn','elephant','dog','igloo','banana','orange','car','giraffe','umbrella'];
+
+    // --- Speech utilities (use speechSynthesis with childlike male timbre) ---
+    function getPreferredVoice(){
+      const voices = speechSynthesis.getVoices();
+      if(!voices.length) return null;
+      // prefer English male-ish voices; fallback to any English voice
+      const pref = voices.find(v=>/en[-_]?/i.test(v.lang) && /male|boy|child|kid|Tom|Daniel|Alex/i.test(v.name));
+      if(pref) return pref;
+      const en = voices.find(v=>/en[-_]?/i.test(v.lang));
+      return en || voices[0];
+    }
+    let preferredVoice = null;
+    function ensureVoicesLoaded(){
+      return new Promise(resolve=>{
+        let voices = speechSynthesis.getVoices();
+        if(voices.length){ preferredVoice = getPreferredVoice(); return resolve(); }
+        speechSynthesis.onvoiceschanged = ()=>{ preferredVoice = getPreferredVoice(); resolve(); };
+        setTimeout(()=>{ preferredVoice = getPreferredVoice(); resolve(); },1000);
+      });
+    }
+
+    function speak(text,opts={rate:0.95,pitch:1.3,lang:'en-US'},onend){
+      if(!('speechSynthesis' in window)){
+        console.warn('SpeechSynthesis not supported'); if(onend) onend(); return;
+      }
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = opts.lang || 'en-US';
+      u.rate = opts.rate || 0.95;
+      u.pitch = opts.pitch || 1.3;
+      if(preferredVoice) u.voice = preferredVoice;
+      // try to favor a slightly childlike tone
+      u.onend = ()=>{ if(onend) onend(); };
+      speechSynthesis.cancel(); // stop previous
+      speechSynthesis.speak(u);
+    }
+
+    // Small visual celebration
+    function showStars(){
+      for(let i=0;i<10;i++){
+        const s = document.createElement('div'); s.className='star'; s.textContent = ['✨','🌟','🎉','⭐'][Math.floor(Math.random()*4)];
+        document.body.appendChild(s);
+        const x = Math.random()*window.innerWidth; const delay = Math.random()*200;
+        s.style.left = (x|0)+'px'; s.style.top = (window.innerHeight-120)+'px';
+        setTimeout(()=>{ s.style.opacity=1; s.style.transform='translateY(-320px) rotate('+ (Math.random()*360|0) +'deg)'; },delay);
+        setTimeout(()=>{ s.remove(); },1400+delay);
+      }
+    }
+
+    // --- Render fill-in list with clickable words ---
+    const fillList = document.getElementById('fillList');
+    fillItems.forEach((it,i)=>{
+      const li = document.createElement('li');
+      const wordSpan = document.createElement('span'); wordSpan.className='word-box'; wordSpan.textContent = `${i+1}. ${it.word}`;
+      wordSpan.style.cursor='pointer'; wordSpan.title = 'Кликни, чтобы услышать';
+      wordSpan.addEventListener('click',()=>{ speakArticlePhrase(it.answer,it.word); });
+      const inp = document.createElement('input'); inp.className='short'; inp.dataset.index = i; inp.maxLength=2; inp.placeholder='A / AN';
+      li.appendChild(document.createElement('div')); li.querySelector('div').className='emoji'; li.querySelector('div').textContent = it.emoji;
+      li.appendChild(wordSpan); li.appendChild(inp);
+      fillList.appendChild(li);
+    });
+
+    // Article phrase like 'a cat' or 'an apple'
+    function articleFor(word,forceAnswer){
+      // if forceAnswer provided (A/AN), use it; else decide by known list
+      if(forceAnswer) return forceAnswer+' '+word;
+      // basic heuristic from data
+      const found = fillItems.find(i=>i.word===word);
+      if(found) return found.answer+' '+word;
+      // fallback: vowel sound check by first letter (simple)
+      return (/^[aeiou]/i.test(word)?'AN ':'A ')+word;
+    }
+    function speakArticlePhrase(art,word){
+      const phrase = (art+' '+word).toLowerCase();
+      // for better childlike sound, use small pause and then the phrase
+      speak(phrase,{rate:0.95,pitch:1.4,lang:'en-US'});
+    }
+
+    document.getElementById('checkFill').addEventListener('click',()=>{
+      const inputs = [...document.querySelectorAll('#fillList input')];
+      let correct = 0;
+      inputs.forEach(inp=>{
+        const idx = +inp.dataset.index; const val = (inp.value||'').trim().toUpperCase();
+        inp.style.borderColor = '#ddd';
+        if(val===fillItems[idx].answer){ correct++; inp.style.borderColor = 'green'; }
+        else{ inp.style.borderColor = '#f08a5d'; }
+      });
+      const res = document.getElementById('fillResult'); res.style.display='block'; res.textContent = `Правильно: ${correct} из ${fillItems.length}`;
+      // speak praise
+      if(correct===fillItems.length){ speak('Well done! Good job!',{},()=>{ showStars(); }); }
+      else if(correct>=Math.ceil(fillItems.length*0.6)){ speak('Good job! Keep going!'); }
+      else{ speak('Try again!'); }
+    });
+    document.getElementById('resetFill').addEventListener('click',()=>{ document.querySelectorAll('#fillList input').forEach(i=>{i.value='';i.style.borderColor='#ddd'}); document.getElementById('fillResult').style.display='none'; });
+
+    // --- DnD rendering and click-to-speak ---
+    const dndArea = document.getElementById('dndArea');
+    wordsForDnd.forEach(w=>{
+      const el = document.createElement('div'); el.className='card-draggable'; el.draggable=true; el.textContent = w; el.id = 'drag-'+w;
+      el.tabIndex = 0;
+      el.addEventListener('dragstart',ev=>{ ev.dataTransfer.setData('text/plain',w); setTimeout(()=>el.style.opacity='0.4',50); });
+      el.addEventListener('dragend',()=>{ el.style.opacity='1' });
+      el.addEventListener('click',()=>{ // speak phrase with article
+        const it = fillItems.find(x=>x.word===w);
+        const art = it?it.answer:(/^[aeiou]/i.test(w)?'AN':'A');
+        speak((art+' '+w).toLowerCase(),{},()=>{});
+      });
+      // keyboard accessibility: press Enter to speak
+      el.addEventListener('keydown',e=>{ if(e.key==='Enter'){ el.click(); } });
+      dndArea.appendChild(el);
+    });
+    function allowDrop(ev){ ev.preventDefault(); }
+    function dropToBin(ev,bin){ ev.preventDefault(); const w = ev.dataTransfer.getData('text/plain'); const src = document.getElementById('drag-'+w); if(!src) return; const container = bin.querySelector('.binList'); container.appendChild(src); }
+    const binA = document.getElementById('binA'); const binAN = document.getElementById('binAN');
+    binA.addEventListener('dragover',allowDrop); binAN.addEventListener('dragover',allowDrop);
+    binA.addEventListener('drop',ev=>dropToBin(ev,binA)); binAN.addEventListener('drop',ev=>dropToBin(ev,binAN));
+
+    document.getElementById('checkDnd').addEventListener('click',()=>{
+      const aList = [...binA.querySelectorAll('.card-draggable')].map(n=>n.textContent);
+      const anList = [...binAN.querySelectorAll('.card-draggable')].map(n=>n.textContent);
+      let correct = 0; let total = 0;
+      const answerMap = {A:['cat','dog','banana','car','giraffe','unicorn'],AN:['apple','elephant','igloo','hour','orange','umbrella']};
+      wordsForDnd.forEach(w=>{ if(answerMap.A.includes(w) || answerMap.AN.includes(w)) total++; });
+      aList.forEach(w=>{ if(answerMap.A.includes(w)) correct++; });
+      anList.forEach(w=>{ if(answerMap.AN.includes(w)) correct++; });
+      const res = document.getElementById('dndResult'); res.style.display='block'; res.textContent = `Правильных размещений: ${correct} из ${total}`;
+      // speak praise or try again
+      if(correct===total){ speak('Excellent! Well done!',{},()=>{ showStars(); }); }
+      else if(correct>=Math.ceil(total*0.6)){ speak('Good job! Almost there!'); }
+      else{ speak('Try again!'); }
+    });
+    document.getElementById('resetDnd').addEventListener('click',()=>{ const allDrags = [...document.querySelectorAll('.card-draggable')]; allDrags.forEach(d=>dndArea.appendChild(d)); document.getElementById('dndResult').style.display='none'; });
+
+    // --- Quiz setup ---
+    function makeChoiceBlock(block){
+      const word = block.dataset.word; const answer = block.dataset.answer;
+      ['A','AN'].forEach(opt=>{
+        const c = document.createElement('div'); c.className='choice'; c.textContent = opt;
+        c.addEventListener('click',()=>{
+          // speak the phrase first
+          speak((answer+' '+word).toLowerCase());
+          // mark
+          if(opt===answer){ c.classList.add('correct'); speak(randomPraise(),{},()=>{ showStars(); }); }
+          else{ c.classList.add('wrong'); speak('Try again!',{}); }
+          block.querySelectorAll('.choice').forEach(ch=>ch.style.pointerEvents='none');
+          showQuizScore();
+        });
+        block.appendChild(c);
+      });
+    }
+    document.querySelectorAll('.choices').forEach(makeChoiceBlock);
+    function randomPraise(){ const arr=['Good job!','Well done!','Excellent!']; return arr[Math.floor(Math.random()*arr.length)]; }
+    function showQuizScore(){ const total = document.querySelectorAll('.choices').length; const correct = document.querySelectorAll('.choice.correct').length; const res = document.getElementById('quizResult'); res.style.display='block'; res.textContent = `Правильно: ${correct} из ${total}`; }
+
+    // Diploma
+    document.getElementById('getBadge').addEventListener('click',()=>{
+      const win = window.open('','_blank');
+      const html = `<!doctype html><html><head><meta charset=\"utf-8\"><title>Диплом детектива</title><style>body{font-family:Arial,Helvetica,sans-serif;background:#fff9ec;padding:40px;color:#333} .card{background:white;padding:30px;border-radius:12px;box-shadow:0 12px 30px rgba(0,0,0,.08);max-width:680px;margin:0 auto;text-align:center} h1{margin:6px 0 8px;font-size:28px;color:#4a7c59} p{color:#666} .medal{font-size:56px;margin:16px 0} .small{font-size:13px;color:#888;margin-top:6px}</style></head><body><div class=\"card\"><div class=\"medal\">🏅</div><h1>Почётный детектив английского языка</h1><p>Поздравляем! Ты помог сыщикам A и AN раскрыть дело об артикле.</p><p class=\"small\">Распечатай этот диплом или сохрани как PDF для памяти.</p></div></body></html>`;
+      win.document.write(html); win.document.close();
+    });
+
+    // Ensure voices loaded for immediate use
+    ensureVoicesLoaded().then(()=>{
+      // try a tiny warm-up so first click speaks immediately on some browsers
+      // do nothing audible, just prepare
+      // speak('Hello',{},()=>{});
+    });
+
+  </script>
+</body>
+</html>
